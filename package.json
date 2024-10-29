@@ -1,0 +1,25 @@
+{
+  "name": "pdfkit-api-resume",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "brfs": "^2.0.2",
+    "browserify": "^17.0.1",
+    "express": "^4.21.1",
+    "iconv-lite": "^0.6.3",
+    "nodemon": "^3.1.7",
+    "pdfkit": "^0.15.0",
+    "uglify-js": "^3.19.3"
+  },
+  "packageManager": "pnpm@9.1.4+sha1.2432063d815cfa88fd9fef1d85a445e3f609851d"
+}

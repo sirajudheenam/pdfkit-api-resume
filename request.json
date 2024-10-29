@@ -1,0 +1,90 @@
+{
+    "meta": {
+        "background": "white",
+        "paperSize": "A4"
+    },
+    "header": {
+        "fontSize": "35",
+        "color": "blue",
+        "firstName": "Sam",
+        "lastName": "Miller",
+        "dateOfBirth": "1981-06-10",
+        "address": "12, ABC Street, XYZ 098765",
+        "city": "Cambridge, Massachusetts",
+        "country": "USA",
+        "phone": "+101234567890",
+        "email": "sam.miller@example.com",
+        "photoPath": "./public/images/sam.png",
+        "photoBorder": "false"
+    },
+    "education": [
+        {
+            "from": "May 2000",
+            "to": "June 2004",
+            "university": "Harvard University",
+            "city": "Cambridge, Massachusetts",
+            "country": "USA",
+            "degree": "Bachelor of Technology",
+            "major": "Computer Science & Engineering"
+        },
+        {
+            "from": "July 2004",
+            "to": "Apr 2006",
+            "university": "Stanford University",
+            "city": "Stanford, California",
+            "country": "USA",
+            "degree": "Master of Engineering",
+            "major": "Neural Networks"
+        },
+        {
+            "from": "June 2006",
+            "to": "June 2010",
+            "university": "University of Cambridge",
+            "city": "Cambridge, England",
+            "country": "UK",
+            "degree": "Doctor of Philosophy",
+            "major": "Neural Networks"
+        }
+    ],
+    "experience": [
+        {
+            "from": "April 2019",
+            "to": "Present",
+            "jobTitle": "Lead AI Engineer",
+            "company": "Future Tech AI",
+            "city": "Boston, Massachusetts",
+            "country": "USA",
+            "responsibilities": [
+                "Designed and implemented neural network models for real-time image processing.",
+                "Researched and integrated AI solutions to enhance product offerings.",
+                "Mentored junior engineers on machine learning best practices and techniques."
+            ]
+        },
+        {
+            "from": "January 2015",
+            "to": "March 2019",
+            "jobTitle": "Senior Software Engineer",
+            "company": "Global Solutions Ltd.",
+            "city": "New York, New York",
+            "country": "USA",
+            "responsibilities": [
+                "Led a team of 5 engineers in developing enterprise-level applications.",
+                "Architected microservices to enhance system modularity and maintainability.",
+                "Implemented CI/CD pipelines, improving deployment efficiency by 40%."
+            ]
+        },
+        {
+            "from": "July 2010",
+            "to": "December 2014",
+            "jobTitle": "Software Engineer",
+            "company": "Tech Innovators Inc.",
+            "city": "San Francisco, California",
+            "country": "USA",
+            "responsibilities": [
+                "Developed and maintained scalable web applications using JavaScript and Node.js.",
+                "Collaborated with cross-functional teams to design and implement new features.",
+                "Optimized application performance, reducing load times by up to 30%."
+            ]
+        }
+    ]
+}
