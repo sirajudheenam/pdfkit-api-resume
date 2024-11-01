@@ -1,0 +1,58 @@
+{
+    "meta": {
+        "background": "white",
+        "paperSize": "A4"
+    },
+    "name": "Jane Doe",
+    "title": "Digital Marketing Expert",
+    "profile": "Dynamic marketing expert with extensive experience in digital strategy, analytics, and growth marketing. Known for delivering data-driven campaigns.",
+    "contact": {
+        "address": "123 Marketing Ave, New York, NY, USA",
+        "phone": "(987) 654-3210",
+        "email": "janedoe@example.com",
+        "website": "www.janemarketingpro.com"
+    },
+    "experience": [
+        {
+            "title": "Senior Marketing Specialist",
+            "company": "Amazon",
+            "location": "New York, USA",
+            "period": "Jun 2018 - Present",
+            "description": "Led digital campaigns that increased customer engagement by 30%. Developed innovative strategies for product launches and analyzed market trends."
+        },
+        {
+            "title": "Marketing Coordinator",
+            "company": "Google",
+            "location": "Mountain View, CA",
+            "period": "Aug 2015 - May 2018",
+            "description": "Coordinated marketing campaigns, analyzed performance metrics, and supported strategic initiatives across various digital platforms."
+        }
+    ],
+    "education": [
+        {
+            "degree": "MSc in Digital Marketing",
+            "school": "NYU Stern School of Business",
+            "period": "2012 - 2014"
+        },
+        {
+            "degree": "BA in Communication",
+            "school": "UCLA",
+            "period": "2008 - 2012"
+        }
+    ],
+    "certificates": [
+        "Certified Digital Marketing Specialist - Digital Marketing Institute",
+        "Google Ads Certification - Google"
+    ],
+    "skills": [
+        "SEO",
+        "Content Marketing",
+        "Data Analysis",
+        "HubSpot",
+        "Salesforce"
+    ],
+    "languages": [
+        "English (Native)",
+        "French (Fluent)"
+    ]
+}
