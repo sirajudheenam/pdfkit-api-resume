@@ -6,7 +6,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3005;
 
 // Enable CORS for all routes
 app.use(cors());
@@ -248,13 +247,15 @@ app.post('/generate-resume', (req, res) => {
     // Languages 
     drawLanguages(doc, languages);
 
-
     // Finalize the PDF and end the document stream
     doc.end();
 });
 
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// // Start the server in dev mode
+// const PORT = process.env.PORT || 3005;
+// app.listen(PORT, () => {
+//     console.log(`Server is running on http://localhost:${PORT}`);
+// });
+
+module.exports = app;

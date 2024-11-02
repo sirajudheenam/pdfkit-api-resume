@@ -36,7 +36,6 @@ app.post('/generate-resume2', (req, res) => {
     // Pipe PDF document to response
     doc.pipe(res);
 
-
     // Left fill
     // find w and h for rectange based on paper size. doc.rect(0, 0, w, h)
     const w = doc.page.width * 0.35;
