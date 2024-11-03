@@ -25,3 +25,5 @@ nodemon is taking care of development and hot reloading of index.js
 
 TODO:
 
+-  Deployed on Vercel  on 02 Nov 2024 - Everything works except public/sam.png
+- URL: 

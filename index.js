@@ -20,12 +20,15 @@ app.use(cors());
 // Middleware to parse JSON request bodies
 app.use(bodyParser.json());
 
-function checkAndAddPage(doc) {
+function checkAndAddPage(doc, styles) {
     if (doc.y > 700) {
-        doc.addPage();
+        doc.addPage({ size: styles.paperSize || 'A4', margin: 50 });
+        if (styles.colors.background) {
+            doc.rect(0, 0, doc.page.width, doc.page.height).fill(styles.colors.background).fillColor(styles.colors.text || 'black');
+        }
     }
 }
-function drawPhoto(doc, photo) {
+function drawPhoto(doc, photo, styles) {
 
     // Add customizable photo with border style based on user input
     if (photo.data.path && fs.existsSync(photo.data.path)) {
@@ -85,7 +88,7 @@ function drawPhoto(doc, photo) {
 }
 
 // Personal Section
-function drawPersonal(doc, personal) {
+function drawPersonal(doc, personal, styles) {
     doc.fontSize(30).fillColor(personal.style.heading.color || 'black').text(`${personal.data.firstName} ${personal.data.lastName}`, 50, 50);
     doc.fontSize(12).fillColor(personal.style.color || 'black').moveDown()
         .text(`Date of Birth: ${personal.data.DOB.day}.${personal.data.DOB.month}.${personal.data.DOB.year}`)
@@ -96,7 +99,7 @@ function drawPersonal(doc, personal) {
 }
 
 // Education Section
-function drawEducation(doc, education) {
+function drawEducation(doc, education, styles) {
     doc.fontSize(education.style.heading.fontSize || 18).fillColor(education.style.heading.color).text('Education', { underline: education.style.heading.underline || false }).moveDown(1);
     education && education.data.forEach(edu => {
         doc.fontSize(education.style.text.fontSize || 14).fillColor(education.style.text.color).text(`${edu.degree} in ${edu.major}`, { align: "justify", bold: true })
@@ -107,8 +110,8 @@ function drawEducation(doc, education) {
 }
 
 // Experience Section
-function drawExperience(doc, experience) {
-    checkAndAddPage(doc);
+function drawExperience(doc, experience, styles) {
+    checkAndAddPage(doc, styles);
     doc.fontSize(experience.style.heading.fontSize || 18).fillColor(experience.style.heading.color).text('Experience', { underline: experience.style.heading.underline || false }).moveDown(1);
     experience && experience.data.forEach(exp => {
         doc.fontSize(experience.style.text.fontSize || 14).fillColor(experience.style.text.color).text(`${exp.jobTitle} at ${exp.company}`, { bold: true })
@@ -123,8 +126,8 @@ function drawExperience(doc, experience) {
 }
 
 // Certifications
-function drawCertifications(doc, certifications) {
-    checkAndAddPage(doc);
+function drawCertifications(doc, certifications, styles) {
+    checkAndAddPage(doc, styles);
     doc.fontSize(certifications?.style.heading.fontSize || 14).fillColor(certifications?.style.heading.color).text('Certifications', { underline: certifications?.style.heading.underline || false }).moveDown(1);
     certifications && certifications.data.forEach((cert) => {
         doc.moveDown(0.5);
@@ -134,8 +137,8 @@ function drawCertifications(doc, certifications) {
 }
 
 // Skills Section with Progress Bars
-function drawSkills(doc, skills) {
-    checkAndAddPage(doc);
+function drawSkills(doc, skills, styles) {
+    checkAndAddPage(doc, styles);
     doc.fontSize(skills?.style.heading.fontSize || 14).fillColor(skills?.style.heading.color || '#333').text('Skills', { underline: skills?.style.heading.underline || false }).moveDown(1);
 
     skills?.data && skills?.data?.forEach((skill) => {
@@ -161,8 +164,8 @@ function drawSkills(doc, skills) {
 }
 
 
-function drawLanguages(doc, languages) {
-    checkAndAddPage(doc);
+function drawLanguages(doc, languages, styles) {
+    checkAndAddPage(doc, styles);
 
     // Default star colors
     const filledColor = languages?.style?.stars?.color || '#FFD700'; // Filled star color (e.g., gold)
@@ -220,6 +223,11 @@ app.post('/generate-resume', (req, res) => {
     // Create a new PDF document
     const doc = new PDFDocument({ size: meta.paperSize || 'A4', margin: 50 });
 
+    // Add Background Color if specified
+    if (styles.colors.background) {
+        doc.rect(0, 0, doc.page.width, doc.page.height).fill(styles.colors.background).fillColor(styles.colors.text || 'black');
+    }
+
     // Set response headers to indicate PDF content and trigger download
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${personal.firstName}_resume.pdf`);
@@ -227,35 +235,37 @@ app.post('/generate-resume', (req, res) => {
     // Pipe PDF document to response
     doc.pipe(res);
 
-    // Add Background Color if specified
-    if (styles.colors.background) {
-        doc.rect(0, 0, doc.page.width, doc.page.height).fill(styles.colors.background).fillColor(styles.colors.text || 'black');
-    }
+
 
     // Photo Section
-    drawPhoto(doc, photo);
+    drawPhoto(doc, photo, styles);
     // Personal Section
-    drawPersonal(doc, personal);
+    drawPersonal(doc, personal, styles);
     // Education Section
-    drawEducation(doc, education);
+    drawEducation(doc, education, styles);
     // Experience Section
-    drawExperience(doc, experience);
+    drawExperience(doc, experience, styles);
     // Certifications
-    drawCertifications(doc, certifications);
+    drawCertifications(doc, certifications, styles);
     // skills
-    drawSkills(doc, skills);
+    drawSkills(doc, skills, styles);
     // Languages 
-    drawLanguages(doc, languages);
+    drawLanguages(doc, languages, styles);
 
     // Finalize the PDF and end the document stream
     doc.end();
 });
 
 
-// // Start the server in dev mode
-// const PORT = process.env.PORT || 3005;
-// app.listen(PORT, () => {
-//     console.log(`Server is running on http://localhost:${PORT}`);
-// });
-
-module.exports = app;
+// Start the server in dev mode
+if (process.env.NODE_ENV === 'development') {
+    console.log('Starting server in development mode...');
+    const PORT = process.env.PORT || 3005;
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+} else {
+    console.log('Starting server in production mode...');
+    // Export the app for Firebase Cloud Functions
+    module.exports = app;
+}
