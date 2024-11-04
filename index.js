@@ -1,9 +1,12 @@
 const express = require('express');
 const PDFDocument = require('pdfkit');
+const axios = require('axios');
+const { XMLHttpRequest } = require('xmlhttprequest');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const request = require('request');
 
 const app = express();
 
@@ -18,7 +21,11 @@ app.use(cors());
 // }));
 
 // Middleware to parse JSON request bodies
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
+// Added a limit after encountering an error with large photo uploads
+// PayloadTooLargeError: request entity too large
+// The limit is set to 10mb, but you can adjust it based on your needs
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 function checkAndAddPage(doc, styles) {
     if (doc.y > 700) {
@@ -28,61 +35,163 @@ function checkAndAddPage(doc, styles) {
         }
     }
 }
-function drawPhoto(doc, photo, styles) {
 
-    // Add customizable photo with border style based on user input
-    if (photo.data.path && fs.existsSync(photo.data.path)) {
-        const imageSize = 100; // Width and height of the photo
-        const x = doc.page.width - imageSize - 40; // X position for the photo
-        const y = 40; // Y position for the photo
-        const { border, shape, borderColor, borderRadius } = photo.style;
+// async function drawPhoto(doc, photo, styles) {
+//     // Add customizable photo with border style based on user input
+//     let photoSource, photoBuffer;
+//     if (photo) {
+//         const imageSize = 100; // Width and height of the photo
+//         const x = doc.page.width - imageSize - 40; // X position for the photo
+//         const y = 40; // Y position for the photo
 
-        // Draw a fully rounded photo
-        if (shape === "rounded") {
-            const centerX = x + imageSize / 2;
-            const centerY = y + imageSize / 2;
+//         const border = photo?.style?.border || false; // Show border or not
+//         const shape = photo?.style?.shape || 'rounded';// Shape of the photo (rounded original or square)
+//         const borderColor = photo?.style?.borderColor || '#333'; // Border color
+//         const borderRadius = photo?.style?.borderRadius || 15;// Adjust this to control corner rounding
 
-            // Create a circular clipping mask
-            doc.save();
-            doc.circle(centerX, centerY, imageSize / 2).clip();
+//         let centerX, centerY;
+//         if (photo?.data?.url) {
+//             console.log("photo.data.url", photo.data.url);
+//             let url = photo.data.url;
+//             try {
+//                 const response = await axios.get(url, {
+//                     responseType: "arraybuffer",
+//                 });
+//                 console.log("response", response);
+//                 photoBuffer = Buffer.from(response.data, 'binary');
+//                 console.log("photoBuffer:", photoBuffer);
+//             } catch (error) {
+//                 console.error('Error loading image:', error);
+//             }
+//         } else if (photo?.data?.base64) {
+//             photoSource = photo?.data?.base64;
+//             photoBuffer = Buffer.from(photo?.data?.base64, 'base64');
+//         } else if (photo?.data?.path && fs.existsSync(photo?.data?.path)) {
+//             photoBuffer = photoSource = photo?.data?.path;
+//         }
 
-            // Draw the image inside the circular mask
-            doc.image(photo.data.path, x, y, {
-                width: imageSize,
-                height: imageSize,
-            });
+//         if (photoSource) {
+//             // Draw a fully rounded photo
+//             if (shape === "rounded") {
+//                 centerX = x + imageSize / 2;
+//                 centerY = y + imageSize / 2;
 
-            doc.restore();
+//                 // Create a circular clipping mask
+//                 doc.save();
+//                 doc.circle(centerX, centerY, imageSize / 2).clip();
 
-            // Draw a circular border if specified
-            if (border) {
-                doc.circle(centerX, centerY, imageSize / 2)
-                    .lineWidth(2) // Border thickness
-                    .stroke(borderColor); // Border color
+//                 // Draw the image inside the circular mask
+//                 doc.image(photoBuffer, x, y, {
+//                     width: imageSize,
+//                     height: imageSize,
+//                 });
+
+//                 doc.restore();
+
+//                 // Draw a circular border if specified
+//                 if (border) {
+//                     doc.circle(centerX, centerY, imageSize / 2)
+//                         .lineWidth(2) // Border thickness
+//                         .stroke(borderColor); // Border color
+//                 }
+//             }
+//             // Draw a square photo with rounded corners
+//             else if (shape === "square") {
+//                 // Create a rectangular clipping mask with rounded corners
+//                 doc.save();
+//                 doc.roundedRect(x, y, imageSize, imageSize, borderRadius).clip();
+//                 // Draw the image inside the rounded rectangle mask
+//                 doc.image(photoBuffer, x, y, {
+//                     width: imageSize,
+//                     height: imageSize,
+//                 });
+//                 doc.restore();
+//                 // Draw a rounded rectangular border if specified
+//                 if (border) {
+//                     doc.roundedRect(x, y, imageSize, imageSize, borderRadius)
+//                         .lineWidth(2) // Border thickness
+//                         .stroke(borderColor); // Border color
+//                 }
+//             }
+//         }
+//     }
+// }
+
+async function drawPhoto(doc, photo, styles) {
+    const imageSize = 100; // Width and height of the photo
+    const x = doc.page.width - imageSize - 40; // X position for the photo
+    const y = 40; // Y position for the photo
+
+    const { border = false, borderColor = '#333', borderRadius = 15, shape = 'rounded' } = photo?.style || {};
+
+    let photoBuffer;
+
+    // Priority: URL -> Base64 -> Local file path
+    if (photo) {
+        try {
+            if (photo?.data?.url) {
+                try {
+                    const response = await axios.get(photo.data.url, { responseType: 'arraybuffer' });
+                    photoBuffer = Buffer.from(response.data); // ArrayBuffer from URL does not need encoding
+                    console.log("using url");
+                } catch (error) {
+                    console.error("Error loading image from URL:", error);
+                }
+            } else if (photo?.data?.base64) {
+                try {
+                    // Remove the base64 prefix if it exists (e.g., "data:image/png;base64,")
+                    const base64Data = photo.data.base64.replace(/^data:image\/\w+;base64,/, '');
+                    photoBuffer = Buffer.from(base64Data, 'base64'); // Specify 'base64' encoding here
+                    console.log("using base64");
+                } catch (error) {
+                    console.error("Error loading base64 image data:", error);
+                }
+            } else if (photo?.data?.path && fs.existsSync(photo.data.path)) {
+                try {
+                    photoBuffer = fs.readFileSync(photo.data.path); // No encoding needed for file
+                    console.log("using path");
+                } catch (error) {
+                    console.error("Error reading image from file path:", error);
+                }
             }
-        }
-        // Draw a square photo with rounded corners
-        else if (shape === "square") {
-            // const borderRadius = borderRadius || 15; // Adjust this to control corner rounding
 
-            // Create a rectangular clipping mask with rounded corners
-            doc.save();
-            doc.roundedRect(x, y, imageSize, imageSize, borderRadius).clip();
+            if (photoBuffer) {
+                const centerX = x + imageSize / 2;
+                const centerY = y + imageSize / 2;
 
-            // Draw the image inside the rounded rectangle mask
-            doc.image(photo.path, x, y, {
-                width: imageSize,
-                height: imageSize,
-            });
+                // Shape handling
+                if (shape === 'rounded') {
+                    // Circular clipping mask
+                    doc.save();
+                    doc.circle(centerX, centerY, imageSize / 2).clip();
+                    doc.image(photoBuffer, x, y, { width: imageSize, height: imageSize });
+                    doc.restore();
 
-            doc.restore();
+                    // Circular border
+                    if (border) {
+                        doc.circle(centerX, centerY, imageSize / 2)
+                            .lineWidth(2)
+                            .stroke(borderColor);
+                    }
+                } else if (shape === 'square') {
+                    // Square with rounded corners
+                    doc.save();
+                    doc.roundedRect(x, y, imageSize, imageSize, borderRadius).clip();
+                    doc.image(photoBuffer, x, y, { width: imageSize, height: imageSize });
+                    doc.restore();
 
-            // Draw a rounded rectangular border if specified
-            if (border) {
-                doc.roundedRect(x, y, imageSize, imageSize, borderRadius)
-                    .lineWidth(2) // Border thickness
-                    .stroke(borderColor); // Border color
+                    // Square border
+                    if (border) {
+                        doc.roundedRect(x, y, imageSize, imageSize, borderRadius)
+                            .lineWidth(2)
+                            .stroke(borderColor);
+                    }
+                }
+            } else {
+                console.error('No valid photo source found.');
             }
+        } catch (error) {
+            console.error('Error loading image:', error);
         }
     }
 }

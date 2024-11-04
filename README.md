@@ -23,7 +23,12 @@ nodemon is taking care of development and hot reloading of index.js
 
 `request.json` contains the actual request from which the data is parsed to produce the resume PDF.
 
+-  Deployed on Vercel  on 02 Nov 2024 for the first time
+
 TODO:
 
--  Deployed on Vercel  on 02 Nov 2024 - Everything works except public/sam.png
-- URL: 
+|Section | Item | Task | Comments |
+|--------|------|------|----------|
+| Profile Image | `{ url:"", base64:"", path:"" }` | Fix URL | axios / fetch / XHR tried. TRY AGAIN|
+|Authentication| Login with Google| Implement Authentication| Use NextAuth first.
+
