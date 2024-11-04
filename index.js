@@ -198,12 +198,12 @@ async function drawPhoto(doc, photo, styles) {
 
 // Personal Section
 function drawPersonal(doc, personal, styles) {
-    doc.fontSize(30).fillColor(personal.style.heading.color || 'black').text(`${personal.data.firstName} ${personal.data.lastName}`, 50, 50);
-    doc.fontSize(12).fillColor(personal.style.color || 'black').moveDown()
-        .text(`Date of Birth: ${personal.data.DOB.day}.${personal.data.DOB.month}.${personal.data.DOB.year}`)
-        .text(`${personal.data.address}, ${personal.data.city}, ${personal.data.postcode}, ${personal.data.country}`)
-        .text(`Phone: ${personal.data.phone}`)
-        .text(`Email: ${personal.data.email}`, { link: `mailto:${personal.data.email}`, underline: false })
+    doc.fontSize(30).fillColor(personal?.style?.heading?.color || 'black').text(`${personal?.data?.firstName} ${personal?.data?.lastName}`, 50, 50);
+    doc.fontSize(12).fillColor(personal?.style?.color || 'black').moveDown()
+        .text(`Date of Birth: ${personal?.data.DOB.day}.${personal?.data.DOB.month}.${personal?.data.DOB.year}`)
+        .text(`${personal?.data.address}, ${personal?.data.city}, ${personal?.data.postcode}, ${personal?.data.country}`)
+        .text(`Phone: ${personal?.data.phone}`)
+        .text(`Email: ${personal?.data.email}`, { link: `mailto:${personal?.data.email}`, underline: false })
         .moveDown();
 }
 
@@ -237,7 +237,7 @@ function drawExperience(doc, experience, styles) {
 // Certifications
 function drawCertifications(doc, certifications, styles) {
     checkAndAddPage(doc, styles);
-    doc.fontSize(certifications?.style.heading.fontSize || 14).fillColor(certifications?.style.heading.color).text('Certifications', { underline: certifications?.style.heading.underline || false }).moveDown(1);
+    doc.fontSize(certifications?.style?.heading.fontSize || 14).fillColor(certifications?.style?.heading.color).text('Certifications', { underline: certifications?.style.heading.underline || false }).moveDown(1);
     certifications && certifications.data.forEach((cert) => {
         doc.moveDown(0.5);
         doc.fontSize(certifications.style.text.fontSize || 10).fillColor(certifications.style.text.color || '#555').text(`• ${cert.name} (${cert.short}) - ${cert.year}`);
@@ -328,12 +328,22 @@ function drawLanguages(doc, languages, styles) {
 app.post('/generate-resume', (req, res) => {
     const data = req.body;
 
-    const { meta, photo, personal, education, experience, certifications, languages, skills, styles } = data;
+    const {
+        meta,
+        photo,
+        personal,
+        education,
+        experience,
+        certifications,
+        languages,
+        skills,
+        styles
+    } = data;
     // Create a new PDF document
     const doc = new PDFDocument({ size: meta.paperSize || 'A4', margin: 50 });
 
     // Add Background Color if specified
-    if (styles.colors.background) {
+    if (styles?.colors?.background) {
         doc.rect(0, 0, doc.page.width, doc.page.height).fill(styles.colors.background).fillColor(styles.colors.text || 'black');
     }
 
