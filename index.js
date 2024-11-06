@@ -29,8 +29,8 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 function checkAndAddPage(doc, styles) {
     if (doc.y > 700) {
-        doc.addPage({ size: styles.paperSize || 'A4', margin: 50 });
-        if (styles.colors.background) {
+        doc.addPage({ size: styles?.paperSize || 'A4', margin: 50 });
+        if (styles?.colors?.background) {
             doc.rect(0, 0, doc.page.width, doc.page.height).fill(styles.colors.background).fillColor(styles.colors.text || 'black');
         }
     }
@@ -140,7 +140,7 @@ async function drawPhoto(doc, photo, styles) {
             } else if (photo?.data?.base64) {
                 try {
                     // Remove the base64 prefix if it exists (e.g., "data:image/png;base64,")
-                    const base64Data = photo.data.base64.replace(/^data:image\/\w+;base64,/, '');
+                    const base64Data = photo?.data?.base64.replace(/^data:image\/\w+;base64,/, '');
                     photoBuffer = Buffer.from(base64Data, 'base64'); // Specify 'base64' encoding here
                     console.log("using base64");
                 } catch (error) {
@@ -199,7 +199,7 @@ async function drawPhoto(doc, photo, styles) {
 // Personal Section
 function drawPersonal(doc, personal, styles) {
     doc.fontSize(30).fillColor(personal?.style?.heading?.color || 'black').text(`${personal?.data?.firstName} ${personal?.data?.lastName}`, 50, 50);
-    doc.fontSize(12).fillColor(personal?.style?.color || 'black').moveDown()
+    doc.fontSize(12).fillColor(personal?.style?.color || styles?.colors?.text || 'black').moveDown()
         .text(`Date of Birth: ${personal?.data.DOB.day}.${personal?.data.DOB.month}.${personal?.data.DOB.year}`)
         .text(`${personal?.data.address}, ${personal?.data.city}, ${personal?.data.postcode}, ${personal?.data.country}`)
         .text(`Phone: ${personal?.data.phone}`)
@@ -209,38 +209,54 @@ function drawPersonal(doc, personal, styles) {
 
 // Education Section
 function drawEducation(doc, education, styles) {
-    doc.fontSize(education.style.heading.fontSize || 18).fillColor(education.style.heading.color).text('Education', { underline: education.style.heading.underline || false }).moveDown(1);
-    education && education.data.forEach(edu => {
-        doc.fontSize(education.style.text.fontSize || 14).fillColor(education.style.text.color).text(`${edu.degree} in ${edu.major}`, { align: "justify", bold: true })
-            .fillColor(education.style.subText.color).fontSize(education.style.subText.fontSize || 12).text(`${edu.university}, ${edu.city}, ${edu.country} - ${edu.from} - ${edu.to} `, { bold: true })
-            .moveDown();
-    });
-    doc.moveDown(1);
+    if (education) {
+        doc.fontSize(education?.style?.heading?.fontSize || styles?.heading?.fontSize || 18)
+            .fillColor(education?.style?.heading?.color)
+            .text('Education', { underline: education.style?.heading?.underline || false })
+            .moveDown(1);
+        education && education?.data.forEach(edu => {
+            doc.fontSize(education?.style?.text?.fontSize || 14)
+                .fillColor(education?.style?.text?.color || styles?.colors?.text || 'black').text(`${edu.degree} in ${edu.major}`, { align: "justify", bold: true })
+                .fillColor(education?.style?.subText?.color)
+                .fontSize(education?.style?.subText?.fontSize || 12)
+                .text(`${edu.university}, ${edu.city}, ${edu.country} - ${edu.from} - ${edu.to} `, { bold: true })
+                .moveDown();
+        });
+        doc.moveDown(1);
+    }
 }
 
 // Experience Section
 function drawExperience(doc, experience, styles) {
     checkAndAddPage(doc, styles);
-    doc.fontSize(experience.style.heading.fontSize || 18).fillColor(experience.style.heading.color).text('Experience', { underline: experience.style.heading.underline || false }).moveDown(1);
-    experience && experience.data.forEach(exp => {
-        doc.fontSize(experience.style.text.fontSize || 14).fillColor(experience.style.text.color).text(`${exp.jobTitle} at ${exp.company}`, { bold: true })
-            .fillColor(experience.style.subText.color).fontSize(12).text(`${exp.city}, ${exp.country} - ${exp.from} To: ${exp.to}`, { align: "justify" }).moveDown();
+    if (experience) {
+        doc.fontSize(experience?.style?.heading?.fontSize || 18).fillColor(experience?.style?.heading?.color).text('Experience', { underline: experience?.style?.heading?.underline || false }).moveDown(1);
+        experience && experience?.data.forEach(exp => {
+            doc.fontSize(experience?.style?.text?.fontSize || 14).fillColor(experience?.style?.text?.color || styles?.colors?.text || 'black')
+                .text(`${exp.jobTitle} at ${exp.company}`, { bold: true })
+                .fillColor(experience?.style?.subText?.color).fontSize(12).text(`${exp.city}, ${exp.country} - ${exp.from} To: ${exp.to}`, { align: "justify" }).moveDown();
 
-        // List responsibilities
-        exp.responsibilities.forEach(responsibility => {
-            doc.fontSize(12).text(`• ${responsibility}`, { indent: 20 });
+            // List responsibilities
+            exp.responsibilities.forEach(responsibility => {
+                doc.fontSize(12).text(`• ${responsibility}`, { indent: 20 });
+            });
+            doc.moveDown(2);
         });
-        doc.moveDown(2);
-    });
+    }
 }
 
 // Certifications
 function drawCertifications(doc, certifications, styles) {
     checkAndAddPage(doc, styles);
-    doc.fontSize(certifications?.style?.heading.fontSize || 14).fillColor(certifications?.style?.heading.color).text('Certifications', { underline: certifications?.style.heading.underline || false }).moveDown(1);
-    certifications && certifications.data.forEach((cert) => {
+    doc.fontSize(certifications?.style?.heading?.fontSize || 14)
+        .fillColor(certifications?.style?.heading?.color)
+        .text('Certifications', { underline: certifications?.style?.heading?.underline || false })
+        .moveDown(1);
+    certifications && certifications?.data.forEach((cert) => {
         doc.moveDown(0.5);
-        doc.fontSize(certifications.style.text.fontSize || 10).fillColor(certifications.style.text.color || '#555').text(`• ${cert.name} (${cert.short}) - ${cert.year}`);
+        doc.fontSize(certifications?.style?.text?.fontSize || 10)
+            .fillColor(certifications?.style?.text?.color || styles?.colors?.text || '#555')
+            .text(`• ${cert.name} (${cert.short}) - ${cert.year}`);
     });
     doc.moveDown(2);
 }
@@ -248,11 +264,16 @@ function drawCertifications(doc, certifications, styles) {
 // Skills Section with Progress Bars
 function drawSkills(doc, skills, styles) {
     checkAndAddPage(doc, styles);
-    doc.fontSize(skills?.style.heading.fontSize || 14).fillColor(skills?.style.heading.color || '#333').text('Skills', { underline: skills?.style.heading.underline || false }).moveDown(1);
+    doc.fontSize(skills?.style?.heading?.fontSize || 14)
+        .fillColor(skills?.style?.heading?.color || '#333')
+        .text('Skills', { underline: skills?.style?.heading?.underline || false })
+        .moveDown(1);
 
     skills?.data && skills?.data?.forEach((skill) => {
         // Draw skill name
-        doc.fontSize(10).fillColor('#555').text(skill.name, { continued: false });
+        doc.fontSize(10)
+            .fillColor(styles?.colors?.text || '#555')
+            .text(skill.name, { continued: false });
 
         // Calculate the width of the progress bar based on proficiency (assuming max proficiency is 10)
         const maxWidth = 200; // Maximum width of the progress bar
@@ -263,9 +284,11 @@ function drawSkills(doc, skills, styles) {
         const barY = doc.y - 10;
 
         // Draw the progress bar background (unfilled part)
-        doc.rect(barX, barY, maxWidth, 8).fillColor(skills.style.bar.color).fill(); // "#DDD"
+        doc.rect(barX, barY, maxWidth, 8)
+            .fillColor(skills.style?.bar.color).fill(); // "#DDD"
         // Draw the filled part of the progress bar
-        doc.rect(barX, barY, barWidth, 8).fillColor(skills.style.bar.progressColor).fill(); // "#4A90E2"
+        doc.rect(barX, barY, barWidth, 8)
+            .fillColor(skills.style?.bar.progressColor).fill(); // "#4A90E2"
 
         // Move down for the next skill
         doc.moveDown(1.5);
@@ -301,7 +324,7 @@ function drawLanguages(doc, languages, styles) {
     languages?.data && languages?.data.forEach((lang) => {
         // Draw the language name
         doc.fontSize(languages?.style?.text?.fontSize || 14)
-            .fillColor(languages?.style?.text?.color || '#555')
+            .fillColor(languages?.style?.text?.color || styles?.colors?.text || '#555')
             .text(lang.name, { continued: false });
 
         // Calculate starting position for stars
@@ -340,7 +363,7 @@ app.post('/generate-resume', (req, res) => {
         styles
     } = data;
     // Create a new PDF document
-    const doc = new PDFDocument({ size: meta.paperSize || 'A4', margin: 50 });
+    const doc = new PDFDocument({ size: meta?.paperSize || 'A4', margin: 50 });
 
     // Add Background Color if specified
     if (styles?.colors?.background) {
@@ -349,12 +372,10 @@ app.post('/generate-resume', (req, res) => {
 
     // Set response headers to indicate PDF content and trigger download
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${personal.firstName}_resume.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=${personal?.firstName}_resume.pdf`);
 
     // Pipe PDF document to response
     doc.pipe(res);
-
-
 
     // Photo Section
     drawPhoto(doc, photo, styles);
